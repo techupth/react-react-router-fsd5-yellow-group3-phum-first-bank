@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function HomePage() {
   const [products, setProducts] = useState([]);
@@ -11,6 +12,7 @@ function HomePage() {
       setIsError(false);
       setIsLoading(true);
       const results = await axios("http://localhost:4001/products");
+      console.log(results);
       setProducts(results.data.data);
       setIsLoading(false);
     } catch (error) {
@@ -21,11 +23,21 @@ function HomePage() {
   useEffect(() => {
     getProducts();
   }, []);
+
+  const removeProduct = (productId) => {
+    axios
+      .delete("http://localhost:4001/products/" + productId)
+      .then(getProducts);
+  };
+
+  const navigate = useNavigate();
   return (
     <div>
       <div className="app-wrapper">
         <h1 className="app-title">Products</h1>
-        <button>Create Product</button>
+        <button onClick={() => navigate("/product/create")}>
+          Create Product
+        </button>
       </div>
       <div className="product-list">
         {products.map((product) => {
@@ -44,12 +56,29 @@ function HomePage() {
                 <h2>Product price: {product.price}</h2>
                 <p>Product description: {product.description} </p>
                 <div className="product-actions">
-                  <button className="view-button">View</button>
-                  <button className="edit-button">Edit</button>
+                  <button
+                    className="view-button"
+                    onClick={() => navigate("/product/view/" + product.id)}
+                  >
+                    View
+                  </button>
+                  <button
+                    className="edit-button"
+                    onClick={() => navigate("/product/edit/" + product.id)}
+                  >
+                    Edit
+                  </button>
                 </div>
               </div>
 
-              <button className="delete-button">x</button>
+              <button
+                className="delete-button"
+                onClick={() => {
+                  removeProduct(product.id);
+                }}
+              >
+                x
+              </button>
             </div>
           );
         })}
